@@ -10,6 +10,9 @@
   <properties>
   	<username>bhawnash</username>
   	<description>sample project for beginners</description>
+  	<surefire.version>2.17</surefire.version>
+	<failsafe.version>2.17</failsafe.version>
+	<jacoco.version>0.7.2.201409121644</jacoco.version>
   </properties>
   <build>
   	<testResources>
@@ -19,6 +22,62 @@
  
   		</testResource>
   	</testResources>
+  	<plugins>
+  			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>	
+				<version>${surefire.version}</version>
+				<configuration>
+				<!-- Setting argline is important, otherwise this would throw error -->
+                       <argLine>${surefireArgLine}</argLine>
+                   </configuration>
+				<executions>
+                   <execution>
+                       <id>unit-tests</id>
+                       <phase>test</phase>
+                       <goals>
+                           <goal>test</goal>
+                       </goals>
+                       <configuration>
+                           <skip>false</skip>
+                           <includes>
+                               <include>**/*Test.java</include>
+                               <include>**/Test*.java</include>
+                           </includes>
+                           <excludes>
+                               <exclude>**/*IT.java</exclude>
+                           </excludes>
+                       </configuration>
+                   </execution>
+                   </executions>
+			</plugin>
+					<plugin>
+					 	<groupId>org.apache.maven.plugins</groupId>
+					 	<artifactId>maven-failsafe-plugin</artifactId>
+					 	<version>${failsafe.version}</version>
+						<configuration>
+	                        <argLine>${failsafeArgLine}</argLine>
+	                    </configuration> 
+	                    <executions>
+	                    <execution>
+	                        <id>integration-tests</id>
+	                        <goals>
+	                        <!-- This goal is by default bound to integration-test phase  -->
+	                            <goal>integration-test</goal>
+	                        </goals>
+	                        <configuration>
+	                            <skip>false</skip>
+	                            <includes>
+	                                <include>**/*IT.java</include>
+	                            </includes>
+	                            <excludes>
+	                                <exclude>**/*Test.java</exclude>
+	                            </excludes>
+	                        </configuration>
+	                    </execution>
+	                    </executions>	
+					</plugin>
+  	</plugins>
   </build>
   <dependencies>
     <dependency>
@@ -28,4 +87,59 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <profiles>
+  	<profile>
+  		<id>code-coverage</id>
+  		<activation>	
+  			<activeByDefault>true</activeByDefault>
+  		</activation>
+  		<build>
+  			<plugins>
+	  			 
+	  				<plugin>
+	  					<groupId>org.jacoco</groupId>
+						<artifactId>jacoco-maven-plugin</artifactId>
+						<version>0.7.6.201602180812</version>
+						<executions>
+							<execution>
+								<id>prepare-agent</id>
+								<goals><goal>prepare-agent</goal></goals>
+								<configuration>
+									<destFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</destFile>
+									<propertyName>surefireArgLine</propertyName>
+								</configuration>
+							</execution>
+							<execution>
+								<id>report</id>
+								<phase>test</phase>
+								<goals>
+									<goal>report</goal>									
+								</goals>
+								<configuration>
+									<dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+								</configuration>								
+							</execution>
+							<execution>
+								<id>prepare-agent-integration</id>
+								<goals><goal>prepare-agent-integration</goal></goals>
+								<configuration>
+									<destFile>${project.build.directory}/coverage-reports/jacoco-it.exec</destFile>
+									<propertyName>failsafeArgLine</propertyName>
+								</configuration>
+							</execution>
+							<execution>
+								<id>report-integration</id>
+								<goals><goal>report-integration</goal></goals>
+								<configuration>
+									<configuration>
+									<dataFile>${project.build.directory}/coverage-reports/jacoco-it.exec</dataFile>
+								</configuration>
+								</configuration>
+							</execution>
+						</executions>
+	  				</plugin>
+  			</plugins>
+  		</build>
+  	</profile>
+  </profiles>
 </project>
